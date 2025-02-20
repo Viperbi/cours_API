@@ -1,0 +1,72 @@
+<?php
+
+    include './env.php';
+    include './utils/functions.php';
+    include './model/modelUtilisateur.php';
+
+
+    function newUser($host,$dbname,$login,$password){
+
+        header("Access-Control-Allow-Origin: *");
+
+        header("Content-Type: application/json; charset=UTF-8");
+
+        header("Access-Control-Allow-Methods: POST");
+
+        header("Access-Control-Max-Age: 3600");
+
+        header("Access-Control-Allow-Headers: Content-Type, Access-Control-AllowHeaders, Authorization, X-Requested-With");
+
+        if($_SERVER['REQUEST_METHOD'] != 'POST'){
+            http_response_code(405);
+            echo json_encode(['message' => "Methode non autorisée", 'code response' => 405]);
+            return;
+        }
+
+        $data = file_get_contents('php://input');
+
+        $data = json_decode($data);
+
+        $bdd = connect($host,$dbname,$login,$password);
+
+        writeUser($bdd, $data);
+
+        http_response_code(200);
+
+        $response = json_encode(['message' => "Tout s'est bien passé", 'code response' => 200]);
+
+        echo $response;
+    }
+
+    
+    function listeUtilisateurs($host,$dbname,$login,$password){
+        // Headers requis
+        // Accès depuis n'importe quel site ou appareil (*)
+        header("Access-Control-Allow-Origin: *");
+        // Format des données envoyées
+        header("Content-Type: application/json; charset=UTF-8");
+        // Méthode autorisée
+        header("Access-Control-Allow-Methods: GET");
+        // Durée de vie de la requête
+        header("Access-Control-Max-Age: 3600");
+        // Entêtes autorisées
+        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-
+        Headers, Authorization, X-Requested-With");
+        // Vérification de la méthode : si ce n’est pas la bonne, on renvoie une erreur
+        if($_SERVER['REQUEST_METHOD'] != 'GET'){
+        http_response_code(405);
+        echo json_encode(["message" => "La méthode n'est pas autorisée"]);
+        return;
+        }
+        //Connexion à la BDD
+        $bdd = connect($host,$dbname,$login,$password);
+        //Récupération de la liste des utilisateurs
+        $data = readUser($bdd);
+        //Envoie des datas
+        http_response_code(200);
+        echo json_encode($data);
+        }
+
+    listeUtilisateurs($_ENV['dbhost'],$_ENV['dbname'],$_ENV['dblogin'],$_ENV['dbpassword']);
+
+    newUser($_ENV['dbhost'],$_ENV['dbname'],$_ENV['dblogin'],$_ENV['dbpassword']);
